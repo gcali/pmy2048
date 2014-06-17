@@ -29,6 +29,13 @@ class Grid:
         for i in range(Grid.DIM):
             yield (Grid.DIM -1 - i)
 
+    def has_won(self) -> bool:
+        for i in range(Grid.DIM):
+            for j in range(Grid.DIM):
+                if self._matrix[i][j] == 512:
+                    return True
+        return False
+
     def _get_move_line(self, direction:str, n:int) -> list:
         if direction in ["up", "u"]:
             line = [self._matrix[i][n] for i in self.dim_iterator()]
@@ -99,14 +106,13 @@ class Grid:
                 #print("Old: {}\nNew: {}".format(line, new_line))
                 valid_move = True
             self._set_move_line(direction, n, new_line)
+        available = self._available_cells()
+        if not available:
+            raise GameOver("Seed: {}".format(self.seed))
         if valid_move:
-            available = self._available_cells()
-            if not available:
-                raise GameOver("Seed: {}".format(self.seed))
-            else:
-                x,y = self.random_generator.choice(available)
-                self._matrix[x][y] = 2 if self.random_generator.randrange(10)\
-                                       else 4
+            x,y = self.random_generator.choice(available)
+            self._matrix[x][y] = 2 if self.random_generator.randrange(10)\
+                                   else 4
         return self
 
     def __str__(self) -> str:
@@ -127,14 +133,55 @@ class Grid:
 
 
     def test(self):
-        self._matrix[0][0] = 2
-        self._matrix[0][2] = 2
-        self._matrix[1][2] = 2
+        v = 1
+        for i in range(Grid.DIM):
+            for j in range(Grid.DIM):
+                self._matrix[i][j] = v
+                v = v + 1
+        self._matrix[Grid.DIM -1][Grid.DIM -1] = 0
+                
 
 if __name__ == '__main__':
-    g = Grid()
+    go_on = True
+    available_moves = ["up", "down", "right", "left"]
+    number_of_games = 0
+    while go_on:
+        number_of_games = number_of_games + 1
+        counter = 0
+        moves = []
+        g = Grid()
+        seed = g.seed
+        while not g.has_won():
+            #if counter % 100 == 0:
+            #    print("Move", counter)
+            #    print(g)
+            #    print("Last moves: {}", moves[-100:])
+            #    input()
+            counter = counter + 1
+            move = random.choice(available_moves)
+            moves.append(move)
+            try:
+                g.move(move)
+            except GameOver:
+                if number_of_games % 100 == 0:
+                    print("Haven't won after {} games...".format(number_of_games))
+                #print("Game over")
+                #print("Moves:", counter)
+                break
+        else:
+            print("Won after {} games!".format(number_of_games))
+            print("Seed: {}".format(g.seed))
+            print(moves)
+            go_on = False
     print(g)
-    g.test()
-    print(g)
+
+    #g = Grid()
+    #g.test()
+    #print(g)
+    #print("Last move")
+    #g.move("down")
+    #print(g)
+    #g.move("up")
+        
         
 
