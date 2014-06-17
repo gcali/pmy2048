@@ -29,10 +29,10 @@ class Grid:
         for i in range(Grid.DIM):
             yield (Grid.DIM -1 - i)
 
-    def has_won(self) -> bool:
+    def has_won(self, target:int=2048) -> bool:
         for i in range(Grid.DIM):
             for j in range(Grid.DIM):
-                if self._matrix[i][j] == 512:
+                if self._matrix[i][j] == target:
                     return True
         return False
 
@@ -115,6 +115,14 @@ class Grid:
                                    else 4
         return self
 
+    def is_move_valid(self, direction:str):
+        for n in self.dim_iterator():
+            line = self._get_move_line(direction, n)
+            new_line = self._merge_line(line)
+            if line != new_line:
+                return True
+        return False
+
     def __str__(self) -> str:
         def remove_zeroes(row:list) -> list:
             return [ str(x) if x is not 0 else ' ' for x in row ]
@@ -142,46 +150,13 @@ class Grid:
                 
 
 if __name__ == '__main__':
-    go_on = True
-    available_moves = ["up", "down", "right", "left"]
-    number_of_games = 0
-    while go_on:
-        number_of_games = number_of_games + 1
-        counter = 0
-        moves = []
-        g = Grid()
-        seed = g.seed
-        while not g.has_won():
-            #if counter % 100 == 0:
-            #    print("Move", counter)
-            #    print(g)
-            #    print("Last moves: {}", moves[-100:])
-            #    input()
-            counter = counter + 1
-            move = random.choice(available_moves)
-            moves.append(move)
-            try:
-                g.move(move)
-            except GameOver:
-                if number_of_games % 100 == 0:
-                    print("Haven't won after {} games...".format(number_of_games))
-                #print("Game over")
-                #print("Moves:", counter)
-                break
-        else:
-            print("Won after {} games!".format(number_of_games))
-            print("Seed: {}".format(g.seed))
-            print(moves)
-            go_on = False
+    g = Grid()
+    g.test()
     print(g)
-
-    #g = Grid()
-    #g.test()
-    #print(g)
-    #print("Last move")
-    #g.move("down")
-    #print(g)
-    #g.move("up")
+    print("Last move")
+    g.move("down")
+    print(g)
+    g.move("up")
         
         
 
