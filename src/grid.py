@@ -12,6 +12,7 @@ class MoveNotValid(Exception):
 
 class Grid:
     DIM = 4
+    DIRECTIONS = ["up", "down", "left", "right"]
     def __init__(self, seed:int=None):
         if seed != None:
             self.seed = seed
@@ -65,6 +66,7 @@ class Grid:
     def _merge_line(self, line:list) -> list:
         new_line = list(line) 
         base = 0
+        score = 0
         #print("Base:", base)
         for curr,e in enumerate(new_line):
             if e != 0:
@@ -82,11 +84,12 @@ class Grid:
                         new_line[curr] = 0
                         new_line[i] = 2 * e
                         base = i+1
+                        score = score + 2 * e
                         break
                 else:
                     new_line[curr] = 0
                     new_line[base] = e
-        return new_line
+        return (new_line, score)
 
     def _init_matrix(self):
         self._reset_matrix()
@@ -99,21 +102,29 @@ class Grid:
 
     def move(self, direction:str):
         valid_move = False
+        score = 0
         for n in self.dim_iterator():
             line = self._get_move_line(direction, n) 
-            new_line = self._merge_line(line)
+            new_line,line_score = self._merge_line(line)
+            score = score + line_score
             if line != new_line:
                 #print("Old: {}\nNew: {}".format(line, new_line))
                 valid_move = True
             self._set_move_line(direction, n, new_line)
         available = self._available_cells()
         if not available:
-            raise GameOver("Seed: {}".format(self.seed))
+            is_there_available_move = False
+            for d in Grid.DIRECTIONS:
+                if self.is_move_valid(d):
+                    is_there_available_move = True
+                    break
+            if not is_there_available_move:
+                raise GameOver("Seed: {}".format(self.seed))
         if valid_move:
             x,y = self.random_generator.choice(available)
             self._matrix[x][y] = 2 if self.random_generator.randrange(10)\
                                    else 4
-        return self
+        return score
 
     def is_move_valid(self, direction:str):
         for n in self.dim_iterator():

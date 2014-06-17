@@ -5,6 +5,7 @@ import interface
 import curses
 from interface import Window
 import sys
+from math import log
 
 _WORD_DIM = 5
 def create_window_from_grid(g:Grid):
@@ -25,7 +26,7 @@ def create_window_from_grid(g:Grid):
                 right = curses.ACS_RTEE
                 intersection = curses.ACS_PLUS
             #win.print_special_character(i,0, curses.ACS_ULCORNER)
-            for col in range(0, win.dim_col-1):
+            for col in range(win.dim_col-1):
                 if col == 0:
                     win.print_special_character(i,col,left)
                 elif col == win.dim_col - 2:
@@ -49,11 +50,18 @@ def create_window_from_grid(g:Grid):
                     x = (i - 2)//4
                     y = (col - 2) // (_WORD_DIM + 3)
                     n = g._matrix[x][y]
+                    attr = curses.color_pair(0)
                     if n == 0:
                         n = ' '
+                    else:
+                        l = int(log(n, 2))
+                        if l <= 6:
+                            attr = curses.color_pair(l)
+                        else:
+                            attr = curses.color_pair(l%6) | curses.A_BOLD
                     format_string = "{{:^{}}}".format(_WORD_DIM)
                     n_string = format_string.format(n)
-                    win.print_str(i,col,n_string)
+                    win.print_str(i,col,n_string, attr)
     win.refresh()
     return win
 

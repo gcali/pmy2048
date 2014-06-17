@@ -171,6 +171,12 @@ class Window:
     start_row = self.dim_row + self.start_row + diff_row
     return Window(dim_row, dim_col, start_row, start_col)
 
+  def create_next_to(self, dim_row, dim_col = -1,
+                       diff_row = 0, diff_col = 0):
+    start_row = self.start_row + diff_row
+    start_col = self.start_col + self.dim_col + diff_col
+    return Window(dim_row, dim_col, start_row, start_col)
+
     
 def start():
   """Initializes curses.
@@ -180,6 +186,13 @@ def start():
   global get_char
 
   stdscr = curses.initscr()
+
+  curses.start_color()
+  colors = [curses.COLOR_RED, curses.COLOR_YELLOW, curses.COLOR_GREEN, 
+            curses.COLOR_CYAN, curses.COLOR_BLUE, curses.COLOR_MAGENTA]
+  for i,c in enumerate(colors):
+    curses.init_pair(i+1, c, curses.COLOR_BLACK)
+
   curses.noecho()
   curses.cbreak()
   stdscr.keypad(True)

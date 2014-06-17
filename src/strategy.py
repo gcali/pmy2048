@@ -32,27 +32,30 @@ def test_strategy_target(target, solutor):
         except GameOver as e:
             number_of_games = number_of_games + 1
             if number_of_games % 500 == 0:
-                printf("Haven't won after {} games".format(number_of_games))
+                print("Haven't won after {} games".format(number_of_games))
             g = Grid()
     return number_of_games, moves
             
 def print_separator():
     print("\n" + "-" * 20 + "\n")
 
-def test_strategy(name:str, solutor:("Grid -> (move, Grid)")):
+def test_strategy(name:str, solutor:("Grid -> (move, Grid)"),
+                  targets=[2**6, 2**7, 2**8, 2**9, 2**10, 2**1, 2**12,
+                           2**13], interactive=True):
     print("Testing strategy {}".format(name))
-    targets = [2**6, 2**7, 2**8, 2**9, 2**10, 2**11, 2**12, 2**13]
     print("Targets to be checked: {}".format(",".join(
         [str(x) for x in targets])))
-    print_separator()
-    for t in targets:
+    for i,t in enumerate(targets):
         print("Checking target {}...".format(t))
         games,moves = test_strategy_target(t, solutor)
         print("Target {} met in {} games.".format(t, games))
-        res = input("Procede to the next one? ".format(t))
-        if res.lower() not in ["", "y", "yes", "s", "si"]:
+        if interactive and i != len(targets) - 1:
+            res = input("Procede to the next one? ".format(t))
+            if res.lower() not in ["", "y", "yes", "s", "si"]:
+                break
+        elif i == len(targets) - 1:
             break
     return True
 
 if __name__ == '__main__':
-    test_strategy("Primitive", primitive_solutor)
+    test_strategy("Primitive", primitive_solutor, [256, 512], False)
