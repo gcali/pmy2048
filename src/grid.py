@@ -11,24 +11,27 @@ class MoveNotValid(Exception):
     pass
 
 class Grid:
+
     DIM = 4
     DIRECTIONS = ["up", "down", "left", "right"]
+
     def __init__(self, seed:int=None):
         if seed != None:
             self.seed = seed
         else:
-            self.seed = random.randint(0, sys.maxsize)
+            self.seed = random.randint(0, sys.maxsize) 
 
         self.random_generator = random.Random(self.seed)
         self._init_matrix()
 
-    def dim_iterator(*args):
+    def iterator_over_dim(*args):
         for i in range(Grid.DIM):
             yield i
 
-    def dim_reverse_iterator(*args):
-        for i in range(Grid.DIM):
-            yield (Grid.DIM -1 - i)
+    def iterator_over_dim_reversed(*args):
+        for i in range(Grid.DIM - 1, -1, -1):
+            yield i
+            #yield (Grid.DIM -1 - i)
 
     def has_won(self, target:int=2048) -> bool:
         for i in range(Grid.DIM):
@@ -39,13 +42,17 @@ class Grid:
 
     def _get_move_line(self, direction:str, n:int) -> list:
         if direction in ["up", "u"]:
-            line = [self._matrix[i][n] for i in self.dim_iterator()]
+            line = [self._matrix[i][n] for i in \
+                                       self.iterator_over_dim()]
         elif direction in ["down", "d"]:
-            line = [self._matrix[i][n] for i in self.dim_reverse_iterator()]
+            line = [self._matrix[i][n] for i in \
+                                       self.iterator_over_dim_reversed()]
         elif direction in ["left", "l"]:
-            line = [self._matrix[n][i] for i in self.dim_iterator()]
+            line = [self._matrix[n][i] for i in \
+                                       self.iterator_over_dim()]
         elif direction in ["right", "r"]:
-            line = [self._matrix[n][i] for i in self.dim_reverse_iterator()]
+            line = [self._matrix[n][i] for i in \
+                                       self.iterator_over_dim_reversed()]
         else:
             raise ValueError
         return line
@@ -67,20 +74,15 @@ class Grid:
         new_line = list(line) 
         base = 0
         score = 0
-        #print("Base:", base)
         for curr,e in enumerate(new_line):
             if e != 0:
-                #print("Curr:", curr)
                 for i in range(curr-1, base-1, -1):
-                    #print("i:", i)
                     if new_line[i] != 0 and new_line[i] != e:
-                        #print("First")
                         new_line[curr] = 0
                         new_line[i+1] = e
                         base = i+1
                         break
                     elif new_line[i] == e:
-                        #print("Second")
                         new_line[curr] = 0
                         new_line[i] = 2 * e
                         base = i+1
@@ -103,12 +105,11 @@ class Grid:
     def move(self, direction:str):
         valid_move = False
         score = 0
-        for n in self.dim_iterator():
+        for n in self.iterator_over_dim():
             line = self._get_move_line(direction, n) 
             new_line,line_score = self._merge_line(line)
             score = score + line_score
             if line != new_line:
-                #print("Old: {}\nNew: {}".format(line, new_line))
                 valid_move = True
             self._set_move_line(direction, n, new_line)
         available = self._available_cells()
@@ -127,9 +128,9 @@ class Grid:
         return score
 
     def is_move_valid(self, direction:str):
-        for n in self.dim_iterator():
+        for n in self.iterator_over_dim():
             line = self._get_move_line(direction, n)
-            new_line = self._merge_line(line)
+            new_line,_score = self._merge_line(line)
             if line != new_line:
                 return True
         return False
