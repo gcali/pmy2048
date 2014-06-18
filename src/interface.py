@@ -2,6 +2,8 @@
 
 import curses
 
+_color_pairs = {}
+_constants = {}
 
 margin_up = 0
 margin_left = 0
@@ -188,10 +190,17 @@ def start():
   stdscr = curses.initscr()
 
   curses.start_color()
-  colors = [curses.COLOR_RED, curses.COLOR_YELLOW, curses.COLOR_GREEN, 
-            curses.COLOR_CYAN, curses.COLOR_BLUE, curses.COLOR_MAGENTA]
-  for i,c in enumerate(colors):
-    curses.init_pair(i+1, c, curses.COLOR_BLACK)
+  colors = [("red", curses.COLOR_RED),
+            ("yellow", curses.COLOR_YELLOW), 
+            ("green", curses.COLOR_GREEN),
+            ("cyan", curses.COLOR_CYAN),
+            ("blue", curses.COLOR_BLUE),
+            ("magenta", curses.COLOR_MAGENTA)]
+  for i,(name,color) in enumerate(colors):
+    curses.init_pair(i+1, color, curses.COLOR_BLACK)
+    _color_pairs[name] = curses.color_pair(i+1)
+  
+  _constants["bold"] = curses.A_BOLD
 
   curses.noecho()
   curses.cbreak()
@@ -216,6 +225,12 @@ def clear_screen():
   """Clears the screen"""
   stdscr.clear()
   stdscr.refresh()
+
+def get_color(name:str) -> "color_attribute":
+    return _color_pairs[name]
+
+def get_constant(name:str) -> "constant_attribute":
+    return _constants[name]
 
 def text_screen(text, wait_for_key = True):
   """Creates a new windows displaying text

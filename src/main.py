@@ -1,11 +1,12 @@
 #! /usr/bin/env python3 
 
-import curses
 from grid import Grid, GameOver
 import interface
 from interface import Window
 from grid_interface import create_window_from_grid
 import sys
+
+score_digits = 7
 
 def start_game():
     while True:
@@ -21,23 +22,49 @@ def start_game():
 
 def menu():
     return interface.get_choice("Welcome to 2048 ncurses version",
-                      ["New game", "Help", "Options", "Quit"])
+                      #["New game", "Help", "Options", "Quit"])
+                       ["New game", "Quit"])
+
+def create_main_window_and_score(g:Grid) -> (Window,Window):
+    main_window = create_window_from_grid(g)
+    score_window = main_window.create_next_to(3,score_digits)
+    score_window.print_str(0,0,"{{:>{}}}".format(\
+        score_digits).format("Score"))
+    refresh_score(score_window, 0)
+    return main_window,score_window
+
+def refresh_score(w:Window, s:"score"):
+    w.print_str(1,0," "*score_digits)
+    w.print_str(1,0,"{{:>{}}}".format(score_digits).format(s),\
+                    interface.get_color("blue") | \
+                    interface.get_constant("bold"))
+    w.refresh()
+
+def result_screen(w:Window,result:str):
+    if result == "won":
+        result = "You won!"
+        attr = interface.get_color("green") |\
+               interface.get_constant("bold")
+    elif result == "lost":
+        result = "You lost..."
+        attr = interface.get_color("red") |\
+               interface.get_constant("bold")
+    else:
+        attr = interface.get_color("magenta") |\
+               interface.get_constant("bold")
+    w_result = w.create_under(1)
+    w_result.print_str(result, attr)
+    w_result.refresh()
+    w_result.get_char() 
 
 def start_new_game():
     g = Grid()
     score = 0
+    w_main,w_score = create_main_window_and_score(g)
     while True:
         has_to_exit = False
-        w = create_window_from_grid(g)
-        score_win = w.create_next_to(3,7)
-        score_win.print_str(0,0,"Score")
-        score_win.refresh()
         while True:
-            score_win.print_str(1,0," "*7)
-            score_win.print_str(1,0,"{:>7}".format(score),\
-                                curses.color_pair(5) | curses.A_BOLD)
-            score_win.refresh()
-            c = w.get_char()
+            c = w_main.get_char()
             if c == "KEY_UP" or\
                c == "k":
                 direction = "up"
@@ -62,20 +89,13 @@ def start_new_game():
         try:
             move_score = g.move(direction)
             score = score + move_score
-            #print("Move score: {}".format(move_score), file=sys.stderr)
+            w_main = create_window_from_grid(g)
+            refresh_score(w_score, score)
         except GameOver as e:
-            res_win = w.create_under(1)
-            res_win.print_str("You lost...", curses.color_pair(1) |\
-                                             curses.A_BOLD)
-            res_win.refresh()
-            w.get_char()
+            result_screen(w_main,"lost")
             return "Game over"
-        if g.has_won():
-            res_win = w.create_under(1)
-            res_win.print_str("You won!", curses.color_pair(3) |\
-                                          curses.A_BOLD)
-            res_win.refresh()
-            w.get_char()
+        if g.has_won(64):
+            result_screen(w_main,"won")
             return "Won"
             
 if __name__ == '__main__':
