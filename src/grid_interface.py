@@ -12,20 +12,19 @@ def create_window_from_grid(g:Grid):
     win = Window(1 + 4 * (Grid.DIM), 2 + (3 + _WORD_DIM) * (Grid.DIM))
     for i in range(win.dim_row):
         if i % 4 == 0:
-            regular = curses.ACS_HLINE
+            regular = interface.get_constant("hline")
             if i == 0:
-                left = curses.ACS_ULCORNER
-                right = curses.ACS_URCORNER
-                intersection = curses.ACS_TTEE
+                left = interface.get_constant("ulcorner")
+                right = interface.get_constant("urcorner")
+                intersection = interface.get_constant("inter_down")
             elif i == win.dim_row - 1:
-                left = curses.ACS_LLCORNER
-                right = curses.ACS_LRCORNER
-                intersection = curses.ACS_BTEE
+                left = interface.get_constant("dlcorner")
+                right = interface.get_constant("drcorner")
+                intersection = interface.get_constant("inter_up")
             else:
-                left = curses.ACS_LTEE
-                right = curses.ACS_RTEE
-                intersection = curses.ACS_PLUS
-            #win.print_special_character(i,0, curses.ACS_ULCORNER)
+                left = interface.get_constant("inter_right")
+                right = interface.get_constant("inter_left")
+                intersection = interface.get_constant("cross")
             for col in range(win.dim_col-1):
                 if col == 0:
                     win.print_special_character(i,col,left)
@@ -37,6 +36,7 @@ def create_window_from_grid(g:Grid):
                     win.print_special_character(i,col,regular)
         else:
             regular = curses.ACS_VLINE
+            #TODO Simplify a little
             for col in range(0, win.dim_col):
                 if col % (_WORD_DIM + 3) == 0:
                     win.print_special_character(i,col,regular)

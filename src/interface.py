@@ -179,6 +179,30 @@ class Window:
     start_col = self.start_col + self.dim_col + diff_col
     return Window(dim_row, dim_col, start_row, start_col)
 
+def _initialize_constants():
+  _constants["bold"] = curses.A_BOLD
+  _constants["horizontal"] = _constants["hor"] =\
+    _constants["hline"] = curses.ACS_HLINE 
+  _constants["vertical"] = _constants["ver"] =\
+    _constants["vline"] = curses.ACS_VLINE
+  _constants["cross"] = _constants["plus"] = curses.ACS_PLUS
+  _constants["intersection_right"] = _constants["inter_right"] =\
+    _constants["ltee"] = curses.ACS_LTEE
+  _constants["intersection_left"] = _constants["inter_left"] =\
+    _constants["rtee"] = curses.ACS_RTEE
+  _constants["intersection_down"] = _constants["inter_down"] =\
+    _constants["ttee"] = curses.ACS_TTEE
+  _constants["intersection_up"] = _constants["inter_up"] =\
+    _constants["btee"] = curses.ACS_BTEE
+  _constants["corner_up_left"] = \
+    _constants["ulcorner"] = curses.ACS_ULCORNER
+  _constants["corner_up_right"] = \
+    _constants["urcorner"] = curses.ACS_URCORNER
+  _constants["corner_down_left"] = _constants["dlcorner"] =\
+    _constants["llcorner"] = curses.ACS_LLCORNER
+  _constants["corner_down_right"] = _constants["drcorner"] =\
+    _constants["lrcorner"] = curses.ACS_LRCORNER
+
     
 def start():
   """Initializes curses.
@@ -199,8 +223,8 @@ def start():
   for i,(name,color) in enumerate(colors):
     curses.init_pair(i+1, color, curses.COLOR_BLACK)
     _color_pairs[name] = curses.color_pair(i+1)
-  
-  _constants["bold"] = curses.A_BOLD
+
+  _initialize_constants() 
 
   curses.noecho()
   curses.cbreak()
