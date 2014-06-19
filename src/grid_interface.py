@@ -1,25 +1,11 @@
 #! /usr/bin/env python3
 
-from grid import *
+from grid import Grid
 import interface
 import curses
 from interface import Window
 import sys
 from math import log
-
-def get_color_from_num(n:int) -> "attribute":
-    if n == 0:
-        return interface.get_color("white")
-    else:
-        n = int(log(n,2) - 1)
-        colors = ["red", "yellow", "green",
-                  "cyan", "blue", "magenta"]
-        modifiers = ["none", "bold", "reverse"]
-        c = n % len(colors)
-        m = n // len(colors)
-        c = interface.get_color(colors[c])
-        m = interface.get_constant(modifiers[m])
-        return c | m
 
 _WORD_DIM = 5
 _CELL_DIM = 3 + _WORD_DIM #space for the word, margins and a separator
@@ -69,18 +55,27 @@ def create_window_from_grid(g:Grid):
                     if n == 0:
                         n = ' '
                     else:
-                        attr = get_color_from_num(n)
-                    #else:
-                    #    l = int(log(n, 2))
-                    #    if l <= 6:
-                    #        attr = curses.color_pair(l)
-                    #    else:
-                    #        attr = curses.color_pair(l%6) | curses.A_BOLD
+                        attr = _get_color_from_num(n)
                     format_string = "{{:^{}}}".format(_WORD_DIM)
                     n_string = format_string.format(n)
                     win.print_str(i,col,n_string, attr)
     win.refresh()
     return win
+
+def _get_color_from_num(n:int) -> "attribute":
+    if n == 0:
+        return interface.get_color("white")
+    else:
+        n = int(log(n,2) - 1)
+        colors = ["red", "yellow", "green",
+                  "cyan", "blue", "magenta"]
+        modifiers = ["none", "bold", "reverse"]
+        c = n % len(colors)
+        m = n // len(colors)
+        c = interface.get_color(colors[c])
+        m = interface.get_constant(modifiers[m])
+        return c | m
+
 
 if __name__ == '__main__':
     interface.start()
