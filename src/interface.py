@@ -180,6 +180,7 @@ class Window:
         return Window(dim_row, dim_col, start_row, start_col)
 
 def _initialize_constants():
+    _constants["none"] = 0
     _constants["bold"] = curses.A_BOLD
     _constants["highlight"] = _constants["reverse"] = curses.A_REVERSE
     _constants["horizontal"] = _constants["hor"] =\
@@ -398,13 +399,17 @@ def get_choice(title, choices, get_input = False, time = -1, i = 0,\
                 new_input = new_input[:-1]
             else:
                 break
+        elif c in handlers:
+            handlers[c](choices,i)
         else:
-            for key in handlers.keys():
-                if c == key:
-                    handlers[key](choices, i)
-                    break
-            else:
-                break
+            break
+        #else:
+        #    for key in handlers.keys():
+        #        if c == key:
+        #            handlers[key](choices, i)
+        #            break
+        #    else:
+        #        break
 
     curses.cbreak()
     clear_screen()
@@ -413,48 +418,6 @@ def get_choice(title, choices, get_input = False, time = -1, i = 0,\
         return (i, c, new_input)
     else:
         return (i, c)
-
-def get_season_episode():
-    """Asks for a season and an episode number
-    
-    Returns:
-        A tuple with the number of the season as the first element and the
-        number of the episode as the second
-    """
-    main_title = "Season and episode choice"
-    season_request_title = "What season?"
-    season = ""
-    episode_request_title = "What episode?"
-    episode = ""
-    current_input_line = 1
-
-    while True:
-        screen = choice_screen(main_title, season_request_title,
-                               season, high=current_input_line)
-        c = get_char()
-        if c.isdigit() or c == " ":
-            season = season + c
-        elif c == "KEY_BACKSPACE":
-            season = season[:-1]
-        elif c == "KEY_ENTER" or c == "\n":
-            break
-
-    current_input_line = 3
-    while True:
-        screen = choice_screen(main_title, season_request_title,
-                               season, episode_request_title,
-                               episode, high=current_input_line)
-        c = get_char()
-        if c.isdigit() or c == " ":
-            episode = episode + c
-        elif c == "KEY_BACKSPACE":
-            episode = episode[:-1]
-        elif c == "KEY_ENTER" or c == "\n":
-            break
-
-    return (int(season), int(episode))
-
-
 
 if __name__ == "__main__":
     start() 
@@ -480,12 +443,8 @@ if __name__ == "__main__":
         choices = f("Ok ", 0,5)
         i, key, junk = get_choice(title, choices, get_input = True)
 
-    (s,e) = get_season_episode()
-    
-
     close()
 
     print(win.dim_row, win.dim_col, win.start_row, win.start_col)
     print(char)
     print(i, junk)
-    print(s,e)
