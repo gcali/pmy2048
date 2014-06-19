@@ -203,6 +203,19 @@ def _initialize_constants():
   _constants["corner_down_right"] = _constants["drcorner"] =\
     _constants["lrcorner"] = curses.ACS_LRCORNER
 
+def _initialize_colors():
+  curses.start_color()
+  colors = [("red", curses.COLOR_RED),
+            ("yellow", curses.COLOR_YELLOW), 
+            ("green", curses.COLOR_GREEN),
+            ("cyan", curses.COLOR_CYAN),
+            ("blue", curses.COLOR_BLUE),
+            ("magenta", curses.COLOR_MAGENTA)]
+  _color_pairs["white"] = curses.color_pair(0)
+  for i,(name,color) in enumerate(colors):
+    curses.init_pair(i+1, color, curses.COLOR_BLACK)
+    _color_pairs[name] = curses.color_pair(i+1)
+
     
 def start():
   """Initializes curses.
@@ -213,17 +226,7 @@ def start():
 
   stdscr = curses.initscr()
 
-  curses.start_color()
-  colors = [("red", curses.COLOR_RED),
-            ("yellow", curses.COLOR_YELLOW), 
-            ("green", curses.COLOR_GREEN),
-            ("cyan", curses.COLOR_CYAN),
-            ("blue", curses.COLOR_BLUE),
-            ("magenta", curses.COLOR_MAGENTA)]
-  for i,(name,color) in enumerate(colors):
-    curses.init_pair(i+1, color, curses.COLOR_BLACK)
-    _color_pairs[name] = curses.color_pair(i+1)
-
+  _initialize_colors()
   _initialize_constants() 
 
   curses.noecho()
