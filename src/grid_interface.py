@@ -8,47 +8,48 @@ import sys
 from math import log
 
 _WORD_DIM = 5
+_CELL_DIM = 3 + _WORD_DIM #space for the word, margins and a separator
 def create_window_from_grid(g:Grid):
-    win = Window(1 + 4 * (Grid.DIM), 2 + (3 + _WORD_DIM) * (Grid.DIM))
+    win = Window(1 + 4 * (Grid.DIM), 2 + _CELL_DIM * Grid.DIM)
     for i in range(win.dim_row):
         if i % 4 == 0:
-            regular = interface.get_constant("hline")
+            regular_char = interface.get_constant("hline")
             if i == 0:
-                left = interface.get_constant("ulcorner")
-                right = interface.get_constant("urcorner")
-                intersection = interface.get_constant("inter_down")
+                left_char = interface.get_constant("ulcorner")
+                right_char = interface.get_constant("urcorner")
+                intersection_char = interface.get_constant("inter_down")
             elif i == win.dim_row - 1:
-                left = interface.get_constant("dlcorner")
-                right = interface.get_constant("drcorner")
-                intersection = interface.get_constant("inter_up")
+                left_char = interface.get_constant("dlcorner")
+                right_char = interface.get_constant("drcorner")
+                intersection_char = interface.get_constant("inter_up")
             else:
-                left = interface.get_constant("inter_right")
-                right = interface.get_constant("inter_left")
-                intersection = interface.get_constant("cross")
+                left_char = interface.get_constant("inter_right")
+                right_char = interface.get_constant("inter_left")
+                intersection_char = interface.get_constant("cross")
             for col in range(win.dim_col-1):
                 if col == 0:
-                    win.print_special_character(i,col,left)
+                    win.print_special_character(i,col,left_char)
                 elif col == win.dim_col - 2:
-                    win.print_special_character(i,col,right)
-                elif col % (_WORD_DIM + 3) == 0:
-                    win.print_special_character(i,col,intersection)
+                    win.print_special_character(i,col,right_char)
+                elif col % _CELL_DIM == 0:
+                    win.print_special_character(i,col,intersection_char)
                 else:
-                    win.print_special_character(i,col,regular)
+                    win.print_special_character(i,col,regular_char)
         else:
-            regular = curses.ACS_VLINE
+            regular_char = curses.ACS_VLINE
             #TODO Simplify a little
             for col in range(0, win.dim_col):
-                if col % (_WORD_DIM + 3) == 0:
-                    win.print_special_character(i,col,regular)
-                elif col % (_WORD_DIM + 3) == 1 or\
-                     col % (_WORD_DIM + 3) == (_WORD_DIM + 3) -1:
+                if col % _CELL_DIM == 0:
+                    win.print_special_character(i,col,regular_char)
+                elif col % _CELL_DIM == 1 or\
+                     col % _CELL_DIM == (_WORD_DIM + 3) -1:
                     win.print_str(i,col,' ')
                 elif i % 4 == 1 or i % 4 == 3:
                     win.print_str(i,col,' ' * _WORD_DIM)
-                elif col % (_WORD_DIM + 3) == 2:
+                elif col % _CELL_DIM == 2:
                     win.print_str(i,col,' ' * _WORD_DIM)
                     x = (i - 2)//4
-                    y = (col - 2) // (_WORD_DIM + 3)
+                    y = (col - 2) // _CELL_DIM
                     n = g._matrix[x][y]
                     attr = curses.color_pair(0)
                     if n == 0:
