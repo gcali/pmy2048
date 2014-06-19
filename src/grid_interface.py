@@ -7,6 +7,20 @@ from interface import Window
 import sys
 from math import log
 
+def get_color_from_num(n:int) -> "attribute":
+    if n == 0:
+        return interface.get_color("white")
+    else:
+        n = int(log(n,2) - 1)
+        colors = ["red", "yellow", "green",
+                  "cyan", "blue", "magenta"]
+        modifiers = ["none", "bold", "reverse"]
+        c = n % len(colors)
+        m = n // len(colors)
+        c = interface.get_color(colors[c])
+        m = interface.get_constant(modifiers[m])
+        return c | m
+
 _WORD_DIM = 5
 _CELL_DIM = 3 + _WORD_DIM #space for the word, margins and a separator
 def create_window_from_grid(g:Grid):
@@ -36,7 +50,7 @@ def create_window_from_grid(g:Grid):
                 else:
                     win.print_special_character(i,col,regular_char)
         else:
-            regular_char = curses.ACS_VLINE
+            regular_char = interface.get_constant("vline")
             #TODO Simplify a little
             for col in range(0, win.dim_col):
                 if col % _CELL_DIM == 0:
@@ -51,15 +65,17 @@ def create_window_from_grid(g:Grid):
                     x = (i - 2)//4
                     y = (col - 2) // _CELL_DIM
                     n = g._matrix[x][y]
-                    attr = curses.color_pair(0)
+                    attr = interface.get_color("white")
                     if n == 0:
                         n = ' '
                     else:
-                        l = int(log(n, 2))
-                        if l <= 6:
-                            attr = curses.color_pair(l)
-                        else:
-                            attr = curses.color_pair(l%6) | curses.A_BOLD
+                        attr = get_color_from_num(n)
+                    #else:
+                    #    l = int(log(n, 2))
+                    #    if l <= 6:
+                    #        attr = curses.color_pair(l)
+                    #    else:
+                    #        attr = curses.color_pair(l%6) | curses.A_BOLD
                     format_string = "{{:^{}}}".format(_WORD_DIM)
                     n_string = format_string.format(n)
                     win.print_str(i,col,n_string, attr)
