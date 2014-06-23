@@ -4,6 +4,11 @@ import random
 import itertools
 import sys
 
+l = [4, 256, 16, 2,
+     2, 64, 128, 4,
+     8, 16, 32, 1024,
+     4, 2, 512, 8]
+
 class GameOver(Exception):
     pass
 
@@ -15,14 +20,17 @@ class Grid:
     DIM = 4
     DIRECTIONS = ["up", "down", "left", "right"]
 
-    def __init__(self, seed:int=None):
+    def __init__(self, seed:int=None, start=None):
         if seed != None:
             self.seed = seed
         else:
             self.seed = random.randint(0, sys.maxsize) 
 
         self.random_generator = random.Random(self.seed)
-        self._init_matrix()
+        if not start:
+            self._init_matrix()
+        else:
+            self._init_matrix_from_list(start)
 
     def iterator_over_dim(*args):
         for i in range(Grid.DIM):
@@ -70,6 +78,7 @@ class Grid:
             else:
                 raise ValueError
 
+
     def _merge_line(self, line:list) -> list:
         new_line = list(line) 
         base = 0
@@ -98,9 +107,24 @@ class Grid:
         for x,y in self.random_generator.sample(self._available_cells(), 2):
             self._matrix[x][y] = 2
 
+    def _init_matrix_from_list(self, l:list):
+        self._reset_matrix()
+        d = len(self._matrix)
+        for i in range(d):
+            for j in range(d):
+                self._matrix[i][j] = l[d*i + j]
+
     def _reset_matrix(self):
         self._matrix = [ [0 for x in range(Grid.DIM)] \
                             for y in range(Grid.DIM)  ]
+
+    def is_there_available_move(self) -> bool:
+        is_there = False
+        for d in Grid.DIRECTIONS:
+            if self.is_move_valid(d):
+                is_there = True
+                break
+        return is_there
 
     def move(self, direction:str):
         valid_move = False
@@ -113,26 +137,36 @@ class Grid:
                 valid_move = True
             self._set_move_line(direction, n, new_line)
         available = self._available_cells()
-        if not available:
-            is_there_available_move = False
-            for d in Grid.DIRECTIONS:
-                if self.is_move_valid(d):
-                    is_there_available_move = True
-                    break
-            if not is_there_available_move:
-                raise GameOver("Seed: {}".format(self.seed))
+        #if not available and not self.is_there_available_move():
+        #    raise GameOver("Seed: {}".format(self.seed))
         if valid_move:
             x,y = self.random_generator.choice(available)
             self._matrix[x][y] = 2 if self.random_generator.randrange(10)\
                                    else 4
+        if not self._available_cells() and \
+           not self.is_there_available_move():
+            raise GameOver("Seed: {}".format(self.seed))
         return score
 
+    #def is_move_valid(self, direction:str):
+    #    for n in self.iterator_over_dim():
+    #        line = self._get_move_line(direction, n)
+    #        new_line,_score = self._merge_line(line)
+    #        if line != new_line:
+    #            return True
+    #    return False
     def is_move_valid(self, direction:str):
         for n in self.iterator_over_dim():
+            found_zero = False
             line = self._get_move_line(direction, n)
-            new_line,_score = self._merge_line(line)
-            if line != new_line:
-                return True
+            for i in range(len(line)):
+                e = line[i]
+                if e == 0:
+                    found_zero = True
+                elif found_zero:
+                    return True
+                elif i != len(line) -1 and line[i] == line[i+1]:
+                    return True
         return False
 
     def __str__(self) -> str:
@@ -159,16 +193,31 @@ class Grid:
                 self._matrix[i][j] = v
                 v = v + 1
         self._matrix[Grid.DIM -1][Grid.DIM -1] = 0
+
+    def copy(self):
+        g = Grid()
+        g._matrix = [ [ self._matrix[i][j]\
+                        for j in range(len(self._matrix[i])) ]\
+                            for i in range(len(self._matrix)) ]
+        return g
                 
 
 if __name__ == '__main__':
     g = Grid()
-    g.test()
+    #g.test()
     print(g)
-    print("Last move")
-    g.move("down")
-    print(g)
+    g_1 = g.copy()
     g.move("up")
+    print("Original after up:")
+    print(g)
+    print("Copy:")
+    print(g_1)
+    l = [4, 256, 16, 2,
+         2, 64, 128, 4,
+         8, 16, 32, 1024,
+         4, 2, 512, 8]
+    print("From list", l)
+    print(Grid(start=l))
         
         
 

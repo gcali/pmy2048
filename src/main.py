@@ -41,10 +41,12 @@ def refresh_score(w:Window, s:"score"):
     w.refresh()
 
 def result_screen(w:Window,result:str):
+    wait = True
     if result == "won":
-        result = "You won!"
+        result = "You won! Do you want to go on? [y/n]"
         attr = interface.get_color("green") |\
                interface.get_constant("bold")
+        wait = False
     elif result == "lost":
         result = "You lost..."
         attr = interface.get_color("red") |\
@@ -55,12 +57,15 @@ def result_screen(w:Window,result:str):
     w_result = w.create_under(1)
     w_result.print_str(result, attr)
     w_result.refresh()
-    w_result.get_char() 
+    if wait:
+        w_result.get_char() 
+    return w_result
 
 def start_new_game():
     g = Grid()
     score = 0
     w_main,w_score = create_main_window_and_score(g)
+    target = 2048
     while True:
         has_to_exit = False
         while True:
@@ -94,9 +99,18 @@ def start_new_game():
         except GameOver as e:
             result_screen(w_main,"lost")
             return "Game over"
-        if g.has_won(64):
-            result_screen(w_main,"won")
-            return "Won"
+        if g.has_won(target):
+            w_res = result_screen(w_main,"won")
+            while True:
+                c = w_main.get_char()
+                if c == 'y' or c == 'n':
+                    break
+            if c == "n":
+                return "Won"
+            else:
+                target = target * 2
+                w_res.clear()
+                w_res.refresh()
             
 if __name__ == '__main__':
     interface.start()

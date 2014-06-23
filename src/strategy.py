@@ -3,13 +3,47 @@
 from grid import Grid, GameOver
 import random
 
-def random_solutor(g:Grid):
+_learning_solutor_moves = 10
+def learning_solutor(g:Grid):
+    moves = ["up", "down", "left", "right"]
+    moves = [x for x in moves if g.is_move_valid(x)]
+    scores = {}
+    for m in moves:
+        scores[m] = []
+        for i in range(_learning_solutor_moves):
+            g_sub = g.copy()
+            local_score = g_sub.move(m)
+            try:
+                while not g_sub.has_won():
+                    _,s = random_solutor(g_sub, True)
+                    local_score = local_score + s
+            except GameOver as e:
+                pass
+            scores[m].append(local_score)
+        scores[m] = sum(scores[m])/len(scores[m])
+    possibilities = [ (s,m) for (m,s) in scores.items() ]
+    possibilities.sort()
+    possibilities.reverse()
+    print(possibilities)
+    try:
+        g.move(possibilities[0][1]) 
+    except IndexError as e:
+        print(e)
+        print(possibilities)
+        print(g)
+        return "up"
+    return possibilities[0][1]
+
+def random_solutor(g:Grid, return_score=False):
     moves = ["up", "down", "left", "right"]
     move = random.choice(moves)
     while not g.is_move_valid(move):
+        if not g.is_there_available_move():
+            move = "up"
+            break
         move = random.choice(moves)
-    g.move(move)
-    return move
+    s = g.move(move)
+    return move if not return_score else (move,s)
 
 def primitive_solutor(g:Grid):
     moves = ["up", "left", "right", "down"]
@@ -58,4 +92,6 @@ def test_strategy(name:str, solutor:("Grid -> (move, Grid)"),
     return True
 
 if __name__ == '__main__':
-    test_strategy("Primitive", primitive_solutor, [256, 512], False)
+    #test_strategy("Random", random_solutor, [64, 128], True)
+    #test_strategy("Primitive", primitive_solutor, [256, 512], False)
+    test_strategy("Learning", learning_solutor, [2048], True)
